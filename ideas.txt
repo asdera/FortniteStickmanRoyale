@@ -1,0 +1,9 @@
+flameThrower
+scopedRifle
+miniGun
+
+gray box
+green chest
+blue supply
+purple vender
+gold llama
