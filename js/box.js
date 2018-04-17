@@ -13,11 +13,11 @@ function Box(body, colour, hp=10) {
       this.init();
     }
     this.life++;
-    pos = this.body.position;
+    var pos = this.body.position;
     push();
     stroke("white")
-    c = color(this.colour)
-    colour = color(red(c), green(c), blue(c), min(this.health/this.maxHealth, 1)*255)
+    var c = color(this.colour);
+    var colour = color(red(c), green(c), blue(c), min(this.health/this.maxHealth, 1)*255);
     fill(colour);
     strokeWeight(2);
     if (pos.y < 0) {
@@ -46,8 +46,10 @@ function Box(body, colour, hp=10) {
   }
 
   this.rip = function() {
-    World.remove(world, this.body);
-    this.destroy = true;
+    if (!this.destroy) {
+      World.remove(world, this.body);
+      this.destroy = true;
+    }
   }
 
   this.damage = function(d) {
@@ -61,7 +63,6 @@ function Box(body, colour, hp=10) {
   }
 }
 
-
 function createGround(box) {
   var obj = box;
   obj.type = "ground";
@@ -80,64 +81,40 @@ function createGround(box) {
       }
     }
   }
+  if (obj.connections.length == 0) {
+    points[minX][minY].connections.push(obj);
+    obj.connections.push(points[minX][minY]);
+  }
   obj.rip = function(p=true) {
-    World.remove(world, this.body);
-    this.destroy = true;
-    for (var i = 0; i < this.connections.length; i++) {
-      tempC = this.connections[i].connections;
-      for (var j = tempC.length - 1; j >= 0; j--) {
-        if (tempC[j].destroy) {
-          tempC.splice(j,1)
+    if (!this.destroy) {
+      World.remove(world, this.body);
+      this.destroy = true;
+      for (var i = 0; i < this.connections.length; i++) {
+        tempC = this.connections[i].connections;
+        for (var j = tempC.length - 1; j >= 0; j--) {
+          if (tempC[j].destroy) {
+            tempC.splice(j,1)
+          }
         }
       }
-    }
-    if (p) {
-      game.checkPoints();
+      for (var i = players.length - 1; i >= 0; i--) {
+        var playeri = players[i];
+        if (playeri) {
+          playeri.action(function(player) {
+            game.checkPoints();
+          }, 1)
+          break;
+        }
+      }
     }
   }
   grounds.push(obj);
 }
 
-function createGround(box) {
-  var obj = box;
-  obj.type = "ground";
-  obj.connections = [];
-  bounds = obj.body.bounds;
-  minX = ceil(bounds.min.x/100);
-  maxX = floor(bounds.max.x/100);
-  minY = ceil(bounds.min.y/100);
-  maxY = floor(bounds.max.y/100);
-  for (var i = minX; i <= maxX; i++) {
-    for (var j = minY; j <= maxY; j++) {
-      if (Vertices.contains(obj.body.vertices, {x: i*100, y: j*100})) {
-        points[i][j].stable = true;
-        points[i][j].connections.push(obj);
-        obj.connections.push(points[i][j]);
-      }
-    }
-  }
-  obj.rip = function(p=true) {
-    World.remove(world, this.body);
-    this.destroy = true;
-    for (var i = 0; i < this.connections.length; i++) {
-      tempC = this.connections[i].connections;
-      for (var j = tempC.length - 1; j >= 0; j--) {
-        if (tempC[j].destroy) {
-          tempC.splice(j,1)
-        }
-      }
-    }
-    player.action(function(player) {
-      game.checkPoints();
-    }, 1)
-  }
-  grounds.push(obj);
-}
-
-function createStructure(b, mats, o=true, id=0) {
+function createStructure(x, y, b, mats, pos, o=true, id=0) {
   if (b.type == 0) {
-    tempX = round(mouseX/100);
-    tempY = floor(mouseY/100);
+    tempX = round(x/100);
+    tempY = floor(y/100);
     tempV1 = 0;
     tempV2 = 0;
     tempV3 = 0;
@@ -148,8 +125,8 @@ function createStructure(b, mats, o=true, id=0) {
     lengthStructure = 105;
     
   } else if (b.type == 1) {
-    tempX = floor(mouseX/100);
-    tempY = round(mouseY/100);
+    tempX = floor(x/100);
+    tempY = round(y/100);
     tempV1 = 0;
     tempV2 = 0;
     tempV3 = 1;
@@ -159,18 +136,18 @@ function createStructure(b, mats, o=true, id=0) {
     boundsY = 9;
     lengthStructure = 105;
   } else if (b.type == 2) {
-    tempX = floor(mouseX/100);
-    tempY = floor(mouseY/100);
+    tempX = floor(x/100);
+    tempY = floor(y/100);
     boundsX = 17;
     boundsY = 8;
     lengthStructure = 145;
-    if (b.stairsEdit == 0) {
+    if (b.edit == 0) {
       turn = PI/4;
       tempV1 = 0;
       tempV2 = 1;
       tempV3 = 1;
       tempV4 = 0;
-    } else if (b.stairsEdit == 1) {
+    } else if (b.edit == 1) {
       turn = -PI/4;
       tempV1 = 0;
       tempV2 = 0;
@@ -183,7 +160,7 @@ function createStructure(b, mats, o=true, id=0) {
     return;
   }
 
-  if (!(points[tempX+tempV1][tempY+tempV2].stable || points[tempX+tempV3][tempY+tempV4].stable) || getLength(pos, {x: mouseX, y: mouseY}) > player.height*3 || mats[b.material.name] < 10) {
+  if ((!(points[tempX+tempV1][tempY+tempV2].stable || points[tempX+tempV3][tempY+tempV4].stable) || getLength(pos, {x: x, y: y}) > 140 || mats[b.material.name] < 10) && id != 0) {
     o = false;
     fill("red");
   }
@@ -203,7 +180,9 @@ function createStructure(b, mats, o=true, id=0) {
 
     obj.type = b.type;
     if (b.type == 2) {
-      obj.edit = b.stairsEdit;
+      obj.edit = b.edit;
+    } else {
+      obj.edit = 0;
     }
 
     obj.heal = b.material.hp - b.material.spawnHp;
@@ -220,19 +199,21 @@ function createStructure(b, mats, o=true, id=0) {
     }
 
     obj.rip = function(p=true) {
-      buildingMap[this.type][this.mapX][this.mapY] = 0;
-      World.remove(world, this.body);
-      this.destroy = true;
-      for (var i = 0; i < this.connections.length; i++) {
-        tempC = this.connections[i].connections;
-        for (var j = tempC.length - 1; j >= 0; j--) {
-          if (tempC[j].destroy) {
-            tempC.splice(j,1)
+      if (!this.destroy) {
+        buildingMap[this.type][this.mapX][this.mapY] = 0;
+        World.remove(world, this.body);
+        this.destroy = true;
+        for (var i = 0; i < this.connections.length; i++) {
+          tempC = this.connections[i].connections;
+          for (var j = tempC.length - 1; j >= 0; j--) {
+            if (tempC[j].destroy) {
+              tempC.splice(j,1)
+            }
           }
         }
-      }
-      if (p) {
-        game.checkPoints();
+        if (p) {
+          game.checkPoints();
+        }
       }
     }
 
@@ -246,9 +227,9 @@ function createStructure(b, mats, o=true, id=0) {
     } else if (b.type == 2) {
       originX = tempX*100+50
       originY = tempY*100+50
-      if (b.stairsEdit == 0) {
+      if (b.edit == 0) {
         quad(originX-49.45, originY+56.57, originX+56.57, originY-49.45, originX+49.45, originY-56.57, originX-56.57, originY+49.45);
-      } else if (b.stairsEdit == 1) {
+      } else if (b.edit == 1) {
         quad(originX+49.45, originY+56.57, originX+56.57, originY+49.45, originX-49.45, originY-56.57, originX-56.57, originY-49.45);
       }
       
@@ -256,7 +237,43 @@ function createStructure(b, mats, o=true, id=0) {
   }
 }
 
-function createItem(item, x, y) {
+function createChest(box, score, guns, items) {
+  var obj = box;
+  obj.score = score;
+  obj.amountGuns = guns;
+  obj.amountItems = items;
+  obj.draw = function() {
+    if (this.init && this.life == 0) {
+      this.init();
+    }
+    this.life++;
+    var pos = this.body.position;
+    stroke("white")
+    strokeWeight(5);
+    var c = color(this.colour);
+    var colour = color(red(c), green(c), blue(c), min(this.health/this.maxHealth, 1)*255);
+    fill(colour);
+    quad(this.body.vertices[0].x, this.body.vertices[0].y, this.body.vertices[1].x, this.body.vertices[1].y, this.body.vertices[2].x, this.body.vertices[2].y, this.body.vertices[3].x, this.body.vertices[3].y);
+    line(this.body.vertices[0].x, this.body.vertices[0].y, this.body.vertices[2].x, this.body.vertices[2].y);
+    line(this.body.vertices[1].x, this.body.vertices[1].y, this.body.vertices[3].x, this.body.vertices[3].y);
+  }
+  obj.rip = function() {
+    if (!this.destroy) {
+      var pos = this.body.position;
+      for (var i = 0; i < this.amountGuns; i++) {
+        createItem(pos.x, pos.y, makeItem(getWeapon(this.score)));
+      }
+      for (var i = 0; i < this.amountItems; i++) {
+        createItem(pos.x, pos.y, makeItem(random(data.resources)));
+      }
+      World.remove(world, this.body);
+      this.destroy = true;
+    }
+  }
+  boxes.push(obj);
+}
+
+function createItem(x, y, item) {
   var obj = new Box(Bodies.circle(x, y, 10), "hotpink");
   obj.item = item;
   obj.draw = function() {
@@ -272,6 +289,8 @@ function createItem(item, x, y) {
       this.rip();
     }
   }
-  boxes.push(obj);
+  items.push(obj);
 }
+
+
 

@@ -6,30 +6,83 @@ var Engine = Matter.Engine,
     Vertices = Matter.Vertices,
     Bounds = Matter.Bounds
 
+var id = 1;
 var engine;
 var world;
-var player;
-var boxes;
+var players;
+var items;
 var grounds;
+var boxes;
 var bounds;
 var structures;
 var points;
 var buildingMap;
 var projectiles;
+var particles;
+var destination;
 var canvaswidth = 1800;
 var canvasheight = 900;
-var game = {};
+var game = {
+	frames: 0,
+	storm: {
+		left: 0,
+		right: 1800,
+		speedLeft: 0,
+		speedRight: 0,
+		distance: 600,
+		intervals: 4000,
+		damage: 0,
+	},
+	supplyDrop: {
+		size: 60,
+		intervals: 2400,
+		score: 1.6,
+		guns: 3,
+		items: 10,
+	},
+	draw: function() {
+		this.frames++;
+		if (this.frames % this.supplyDrop.intervals == 0) {
+			createChest(new Box(Bodies.rectangle(random(this.storm.left, this.storm.right), 0, this.supplyDrop.size, this.supplyDrop.size), "#5EC5FA", 300), this.supplyDrop.score, this.supplyDrop.guns, this.supplyDrop.items);
+		}
+		if (this.frames % this.storm.intervals == 1) {
+			var move = floor(random(this.storm.distance));
+			this.storm.speedLeft = move/(this.storm.intervals/2);
+			this.storm.speedRight = (this.storm.distance-move)/(this.storm.intervals/2);
+			this.storm.damage++;
+		}
+		if (this.frames % this.storm.intervals >= this.storm.intervals/2) {
+			this.storm.left += this.storm.speedLeft;
+			this.storm.right -= this.storm.speedRight;
+		}
+		if (this.frames % 10 == 0) {
+			for (var i = players.length - 1; i >= 0; i--) {
+				var playeri = players[i];
+				if (playeri) {
+					if (playeri.body.position.x < this.storm.left || playeri.body.position.x > this.storm.right) {
+						playeri.damage(this.storm.damage);
+					}
+				}
+			}
+		}
+		fill(color(37, 38, 154, 150))
+		stroke(color(37, 38, 154));
+		strokeWeight(5);
+		rect(0, 0, this.storm.left, 900);
+		rect(this.storm.right, 0, 1800, 900);
+	}
+};
 
 function setup() {
 	data.init();
-	game.startingPoint = {
-		x: 900, // random(canvaswidth * 0.1, canvaswidth * 0.9),
-		y: 0, // random(canvasheight * 0.2, canvasheight * 0.8)
-	},
-	boxes = [];
+	editorMode = true;
+	players = [];
+	items = [];
 	grounds = [];
+	boxes = [];
 	structures = [];
 	projectiles = [];
+	particles = [];
 	points = Matrix(19, 10, {stable: false, connections: []}, true);
 	buildingMap = [
 		Matrix(19, 9),
@@ -41,40 +94,57 @@ function setup() {
 	engine = Engine.create();
 	world = engine.world;
 	Engine.run(engine);
-	
-	// createGround(new Box(Bodies.rectangle(game.startingPoint.x, game.startingPoint.y, 200, 50, { isStatic: true }), "black", 999))
-	player = setPlayer(player, 1);
-	setBoundaries();
+	destination = "tomato"
+	for (var i = 1; i <= 4; i++) {
+		players[i] = setPlayer(maps[destination].spawns[i].x, maps[destination].spawns[i].y, i);
+	}
+	setMap();
 }
 
 function draw() {
 	background(data.background);
-	// stroke(0);
-	// for (var i = 0; i <= 1800; i+=100) {
-	// 	for (var j = 0; j <= 900; j+=100) {
-	// 		point(i, j);
-	// 		ellipse(i, j, 2);
-	// 	}
-	// }
+	stroke(0);
+	strokeWeight(1);
+	for (var i = 0; i <= 1800; i+=100) {
+		for (var j = 0; j <= 900; j+=100) {
+			point(i, j);
+			ellipse(i, j, 2);
+		}
+	}
+
+	game.draw();
 
 	keyDowned();
-	
-	if (player.destroy) {
-		clearWorld();
-	} else {
-		player.draw();
+
+	for (var i = players.length - 1; i >= 0; i--) {
+		var playeri = players[i];
+		if (playeri) {
+			if (playeri.destroy) {
+				players.splice(i,1)
+			} else {
+				playeri.draw();
+			}
+			playeri.mouse();
+		}
 	}
-	player.mouse();
 	for (var i = projectiles.length - 1; i >= 0; i--) {
-		projectilei = projectiles[i];
+		var projectilei = projectiles[i];
 		if (projectilei.destroy) {
 			projectiles.splice(i,1)
 		} else {
 			projectilei.draw();
 		}
 	}
+	for (var i = items.length - 1; i >= 0; i--) {
+		var itemi = items[i];
+		if (itemi.destroy) {
+			items.splice(i,1)
+		} else {
+			itemi.draw();
+		}
+	}
 	for (var i = boxes.length - 1; i >= 0; i--) {
-		boxi = boxes[i];
+		var boxi = boxes[i];
 		if (boxi.destroy) {
 			boxes.splice(i,1)
 		} else {
@@ -82,16 +152,15 @@ function draw() {
 		}
 	}
 	for (var i = structures.length - 1; i >= 0; i--) {
-		structurei = structures[i]
+		var structurei = structures[i]
 		if (structurei.destroy) {
 			structures.splice(i,1)
 		} else {
 			structurei.draw();
 		}
-
 	}
 	for (var i = grounds.length - 1; i >= 0; i--) {
-		groundi = grounds[i];
+		var groundi = grounds[i];
 		if (groundi.destroy) {
 			grounds.splice(i,1)
 		} else {
@@ -157,6 +226,15 @@ function shiftSetVoid(arr, shift) {
 		arr[i].x += shift.x;
 		arr[i].y += shift.y;
 	}
+}
+
+function makerMap() {
+	var sss = ""
+	for (var i = structures.length - 1; i >= 0; i--) {
+		var structurei = structures[i]
+		sss += "["+structurei.mapX*100+", "+structurei.mapY*100+", {type: "+structurei.type+", edit: "+structurei.edit+"}, addMap]\n"
+	}
+	return sss
 }
 
 Array.prototype.unique = function() {

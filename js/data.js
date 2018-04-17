@@ -1,6 +1,11 @@
 // BUILDING
 data = {
 	background: "#a0a0a0",
+	mats: {
+		wood: 100000,
+		brick: 100000,
+		metal: 100000,
+	},
 	wood: {
 		name: "wood",
 		colour: "#ffa54f",
@@ -71,6 +76,7 @@ data = {
 	rareWeapons: ["burstRifle", "boltSniper"],
 	epicWeapons: ["scarRifle", "autoSniper", "silencedPistol"],
 	legendaryWeapons: ["rocketLauncher", "grenadeLauncher"],
+	specialistWeapons: ["deathMachine", "homingGuppies", "biopulsarNullifier", "tropicalKatana"],
 	resources: ["woodMats", "brickMats", "metalMats", "lightAmmo", "mediumAmmo", "heavyAmmo", "shellAmmo", "rocketAmmo"],
 }
 
@@ -86,14 +92,14 @@ weapons = {
 		reload: 120,
 		bulletSize: 6,
 		speed: 0.004,
-		lifeSpan: 6,
+		lifeSpan: 5,
 		gravity: 0.1,
 		spread: 10,
 		autoFire: function(player) {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, {lifeSpan: this.lifeSpan});
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id, {lifeSpan: this.lifeSpan});
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {},
@@ -118,7 +124,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -153,14 +159,14 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 			for (var i = 0; i < this.number-1; i++) {
 				player.action(function(player, gun) {
 					var pos = player.stickPoints.head;
 					var force = gun.speed / gun.gravity;
 					var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(gun.spread*player.aim), radians(gun.spread*player.aim));
-					var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, gun.bulletSize, { gravityScale: gun.gravity, friction: 0, frictionAir: 0 }), gun.colour), gun.damage);
+					var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, gun.bulletSize, { gravityScale: gun.gravity, friction: 0, frictionAir: 0 }), gun.colour), gun.damage, player.id);
 					Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 				}, (i+1) * 5, this)
 			}
@@ -196,7 +202,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -229,7 +235,7 @@ weapons = {
 	// 		pos = player.stickPoints.head;
 	// 		force = this.speed / this.gravity;
 	// 		angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-	// 		bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+	// 		bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 	// 		Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 	// 	}	
 	// },
@@ -249,7 +255,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -281,7 +287,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -316,7 +322,7 @@ weapons = {
 	// 		var pos = player.stickPoints.head;
 	// 		var force = this.speed / this.gravity;
 	// 		var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-	// 		var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+	// 		var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 	// 		Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 	// 	}	
 	// },
@@ -338,7 +344,7 @@ weapons = {
 			var force = this.speed / this.gravity;
 			for (var i = 0; i < this.number; i++) {
 				var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-				var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+				var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 				Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 			}
 		},
@@ -370,7 +376,7 @@ weapons = {
 			var force = this.speed / this.gravity;
 			for (var i = 0; i < this.number; i++) {
 				var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-				var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+				var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 				Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 			}
 		},
@@ -404,7 +410,7 @@ weapons = {
 	// 		var force = this.speed / this.gravity;
 	// 		for (var i = 0; i < this.number; i++) {
 	// 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-	// 			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+	// 			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 	// 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 	// 		}
 	// 	}	
@@ -425,7 +431,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -457,7 +463,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -488,7 +494,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -516,7 +522,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -546,7 +552,7 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 		},
 		shapes: {
@@ -576,7 +582,7 @@ weapons = {
 	// 		var pos = player.stickPoints.head;
 	// 		var force = this.speed / this.gravity;
 	// 		var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-	// 		var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage);
+	// 		var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
 	// 		Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 	// 	}	
 	// },
@@ -596,14 +602,14 @@ weapons = {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, {
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id, {
 				collision: function(colliding, projectile) {
 					var pos = projectile.body.position;
 					var initalAngle = random(PI);
 					var force = this.mini.speed / this.mini.gravity;
 					for (var i = 0; i < this.mini.number; i++) {
 						var angle = 360/this.mini.number*i + initalAngle
-						var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, {lifeSpan: this.mini.lifeSpan});
+						var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
 						Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 					}
 					projectile.rip();
@@ -642,21 +648,21 @@ weapons = {
 		clipSize: 6,
 		reload: 120,
 		bulletSize: 8,
-		speed: 0.008,
+		speed: 0.009,
 		gravity: 1,
 		spread: 0,
 		semiFire: function(player) {
 			var pos = player.stickPoints.head;
 			var force = this.speed / this.gravity;
 			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
-			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, restitution: 1}), this.colour), this.damage, {
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, restitution: 1}), this.colour), this.damage, player.id, {
 				endLife: function(projectile) {
 					var pos = projectile.body.position;
 					var initalAngle = random(PI);
 					var force = this.mini.speed / this.mini.gravity;
 					for (var i = 0; i < this.mini.number; i++) {
 						var angle = 360/this.mini.number*i + initalAngle
-						var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, {lifeSpan: this.mini.lifeSpan});
+						var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
 						Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 					}
 					projectile.rip();
@@ -668,7 +674,7 @@ weapons = {
 						var force = this.mini.speed / this.mini.gravity;
 						for (var i = 0; i < this.mini.number; i++) {
 							var angle = 360/this.mini.number*i + initalAngle
-							var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, {lifeSpan: this.mini.lifeSpan});
+							var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
 							Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
 						}
 						projectile.rip();
@@ -702,6 +708,238 @@ weapons = {
 			hand2: [{x: 4, y: -8}],
 		},
 		shift: {x: 18, y: 8}
+	},
+	deathMachine: {
+		damage: 20,
+		colour: "red",
+		ammoType: "light",
+		fireType: "auto",
+		fireRate: 4,
+		clipSize: 150,
+		reload: 240,
+		bulletSize: 4,
+		speed: 0.002,
+		gravity: 0.1,
+		spread: 36,
+		autoFire: function(player) {
+			var pos = player.stickPoints.head;
+			var force = this.speed / this.gravity;
+			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
+			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+			Body.applyForce(player.body, pos, {x: sin(angle+PI) * force/6, y: cos(angle+PI) * force/3});
+		},
+		shapes: {
+			// body: [{x: -2, y: -2}, {x: 12, y: -2}, {x: 12, y: 2}, {x: -2, y: 2}, "#B68E48"],
+			shield: [{x: -30, y: -7}, {x: -16, y: -7}, {x: -16, y: 7}, {x: -30, y: 7}, "#363A3C"],
+			magazine: [{x: -16, y: -6}, {x: 10, y: -6}, {x: 10, y: -5}, {x: -16, y: -5}, "#C6CCCC"],
+			magazine2: [{x: -16, y: -3}, {x: 10, y: -3}, {x: 10, y: -1}, {x: -16, y: -1}, "#C6CCCC"],
+			magazine3: [{x: -16, y: 1}, {x: 10, y: 1}, {x: 10, y: 3}, {x: -16, y: 3}, "#C6CCCC"],
+			magazine4: [{x: -16, y: 5}, {x: 10, y: 5}, {x: 10, y: 6}, {x: -16, y: 6}, "#C6CCCC"],
+			iron: [{x: 10, y: -7}, {x: 16, y: -7}, {x: 16, y: 7}, {x: 10, y: 7}, "#363A3C"],
+			barrel: [{x: 16, y: -5}, {x: 20, y: -5}, {x: 20, y: -3}, {x: 16, y: -3}, "#C6CCCC"],
+			barrel2: [{x: 16, y: -2}, {x: 20, y: -2}, {x: 20, y: 2}, {x: 16, y: 2}, "#C6CCCC"],
+			barrel3: [{x: 16, y: 3}, {x: 20, y: 3}, {x: 20, y: 5}, {x: 16, y: 5}, "#C6CCCC"],
+			grip: [{x: -18, y: 7}, {x: -28, y: 7}, {x: -28, y: 13}, {x: -18, y: 13}, "#5B5733"],
+		},
+		lines: {
+			hand1: [{x: -27, y: 10}],
+			hand2: [{x: 0, y: -4}],
+		},
+		shift: {x: 18, y: -8}
+	},
+	homingGuppies: {
+		damage: 100,
+		colour: "orange",
+		ammoType: "rocket",
+		fireType: "semi",
+		fireRate: 100,
+		clipSize: 9,
+		reload: 120,
+		bulletSize: 10,
+		speed: 0.005,
+		gravity: 0.1,
+		spread: 0,
+		semiFire: function(player) {
+			var pos = player.stickPoints.head;
+			var force = this.speed / this.gravity;
+			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id, {
+				collision: function(colliding, projectile) {
+					var pos = projectile.body.position;
+					var initalAngle = random(PI);
+					var force = this.mini.speed / this.mini.gravity;
+					for (var i = 0; i < this.mini.number; i++) {
+						var angle = 360/this.mini.number*i + initalAngle
+						var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
+						Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+					}
+					projectile.rip();
+				},
+				addition: function(projectile) {
+					var pos = projectile.body.position;
+					var angle = atan2(mouseX-pos.x, mouseY-pos.y);
+					Body.applyForce(projectile.body, pos, {x: sin(angle) * 0.005, y: cos(angle) * 0.005});
+					if (getLength({x:0, y:0}, projectile.body.velocity) < 1) {
+						var pos = projectile.body.position;
+						var initalAngle = random(PI);
+						var force = this.mini.speed / this.mini.gravity;
+						for (var i = 0; i < this.mini.number; i++) {
+							var angle = 360/this.mini.number*i + initalAngle
+							var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
+							Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+						}
+						projectile.rip();
+					}
+				},
+				mini: {
+					damage: 20,
+					number: 15,
+					colour: "black",
+					bulletSize: 4,
+					speed: 0.001,
+					gravity: 0.1,
+					lifeSpan: 30
+				}
+			});
+			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+		},
+		shapes: {
+			body: [{x: -10, y: -10}, {x: 10, y: -10}, {x: 10, y: 10}, {x: -10, y: 10}, "#687040"],
+			control: [{x: -6, y: 14}, {x: 6, y: 14}, {x: 6, y: 30}, {x: -6, y: 30}, "lightblue"],
+			dot: [{x: -2, y: 20}, {x: 2, y: 20}, {x: 2, y: 24}, {x: -2, y: 24}, "red"],
+			stand: [{x: -8, y: 10}, {x: 8, y: 10}, {x: 8, y: 14}, {x: -8, y: 14}, "#625D59"],
+			iron: [{x: 10, y: -6}, {x: 16, y: -10}, {x: 16, y: 10}, {x: 10, y: 6}, "orange"],
+		},
+		lines: {
+			hand1: [{x: 0, y: 2}],
+			hand2: [{x: 0, y: -8}],
+		},
+		shift: {x: 20, y: -8}
+	},
+	biopulsarNullifier: {
+		damage: 100,
+		colour: "dodgerblue",
+		ammoType: "rocket",
+		fireType: "semi",
+		fireRate: 30,
+		clipSize: 3,
+		reload: 240,
+		bulletSize: 12,
+		speed: 0.02,
+		gravity: 0.01,
+		spread: 0,
+		semiFire: function(player) {
+			var pos = player.stickPoints.head;
+			var force = this.speed / this.gravity;
+			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, restitution: 1}), this.colour), this.damage, player.id, {
+				endLife: function(projectile) {
+					var pos = projectile.body.position;
+					var initalAngle = random(PI);
+					var force = this.mini.speed / this.mini.gravity;
+					for (var i = 0; i < this.mini.number; i++) {
+						var angle = 360/this.mini.number*i + initalAngle
+						var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
+						Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+					}
+					projectile.rip();
+				},
+				collision: function(colliding, projectile) {
+					colliding.damage(projectile.damage);
+					projectile.id = 0;
+					if (projectile.hits >= 5) {
+						var pos = projectile.body.position;
+						var initalAngle = random(PI);
+						var force = this.mini.speed / this.mini.gravity;
+						for (var i = 0; i < this.mini.number; i++) {
+							var angle = 360/this.mini.number*i + initalAngle
+							var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
+							Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+						}
+						projectile.rip();
+					}
+				},
+				mini: {
+					damage: 10,
+					number: 4,
+					colour: "blue",
+					bulletSize: 4,
+					speed: 0.001,
+					gravity: 0.1,
+					lifeSpan: 15
+				},
+				lifeSpan: 250
+			});
+			Body.applyForce(bullet.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+		},
+		shapes: {
+			body: [{x: 0, y: -4}, {x: 20, y: -4}, {x: 20, y: 8}, {x: 4, y: 8}, {x: 0, y: 4}, "red"],
+			stock: [{x: -12, y: -10}, {x: 0, y: -4}, {x: 0, y: 4}, {x: -12, y: -2}, "#1F1F1F"],
+			grip: [{x: -2, y: -12}, {x: 2, y: -12}, {x: 10, y: -4}, {x: 6, y: -4}, "#1F1F1F"],
+			lazer: [{x: 20, y: 3}, {x: 60, y: 3}, {x: 60, y: 7}, {x: 20, y: 7}, "lightblue"],
+			lazer2: [{x: 20, y: -3}, {x: 60, y: -3}, {x: 60, y: 1}, {x: 20, y: 1}, "lightblue"],
+		},
+		lines: {
+			hand1: [{x: -4, y: -4}],
+			hand2: [{x: 0, y: -10}],
+		},
+		shift: {x: 12, y: 0}
+	},
+	tropicalKatana: {
+		damage: 60,
+		colour: "darkgreen",
+		ammoType: "heavy",
+		fireType: "semi",
+		fireRate: 20,
+		clipSize: 20,
+		reload: 240,
+		bulletSize: 7,
+		scan: 5,
+		gravity: 0.5,
+		spread: 0,
+		range: 35,
+		semiFire: function(player) {
+			var pos = player.stickPoints.head;
+			var force = this.speed / this.gravity;
+			var angle = atan2(mouseX-pos.x, mouseY-pos.y) + random(-radians(this.spread*player.aim), radians(this.spread*player.aim));
+			var bullet = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.bulletSize, { gravityScale: this.gravity, friction: 0, frictionAir: 0 }), this.colour), this.damage, player.id);
+			for (var i = 0; i < this.range; i++) {
+				if (bullet.destroy) {
+					break;
+				}
+				Body.translate(bullet.body, {x: sin(angle) * this.scan, y: cos(angle) * this.scan})
+				bullet.draw();
+			}
+			pos = bullet.body.position;
+			var initalAngle = random(PI);
+			var force = this.mini.speed / this.mini.gravity;
+			for (var i = 0; i < this.mini.number; i++) {
+				var angle = 360/this.mini.number*i + initalAngle
+				var projectile = createProjectile(new Box(Bodies.circle(pos.x, pos.y, this.mini.bulletSize, { gravityScale: this.mini.gravity, friction: 0, frictionAir: 0 }), this.mini.colour), this.mini.damage, 0, {lifeSpan: this.mini.lifeSpan});
+				Body.applyForce(projectile.body, pos, {x: sin(angle) * force, y: cos(angle) * force});
+			}
+			bullet.rip();
+		},
+		mini: {
+			damage: 10,
+			number: 4,
+			colour: "darkgreen",
+			bulletSize: 4,
+			speed: 0.001,
+			gravity: 0.1,
+			lifeSpan: 15
+		},
+		shapes: {
+			grip: [{x: 0, y: -2}, {x: -10, y: -2}, {x: -10, y: 2}, {x: 0, y: 2}, "#082C9B"],
+			guard: [{x: -3, y: -6}, {x: 0, y: -6}, {x: 0, y: 6}, {x: -3, y: 6}, "#04DDF8"],
+			blade: [{x: 0, y: -1}, {x: 40, y: -1}, {x: 50, y: 1}, {x: 0, y: 1}, "#FCC760"],
+		},
+		lines: {
+			hand1: [{x: -2, y: 0}],
+			hand2: [{x: -2, y: 0}],
+		},
+		shift: {x: 20, y: 0}
 	},
 	bluePrint: {
 		colour: "lightblue",
@@ -866,63 +1104,162 @@ maps = {
 
 	},
 	wailing: {
-		create: {
-			treeL: [
-				["c", 200, 400, 150, "#06AC10", 150],
-				["r", 200, 600, 50, 400, "#2F1310", 600],
-				["r", 200, 850, 50, 100, "#2F1310", 200],
-			],
-			treeR: [
-				["c", 1600, 400, 150, "#06AC10", 150],
-				["r", 1600, 600, 50, 400, "#2F1310", 600],
-				["r", 1600, 850, 50, 100, "#2F1310", 200],
-			],
-			bush: [
-				["r", 400, 825, 225, 125, "#06AC10", 150],
-				["r", 1400, 825, 225, 125, "#06AC10", 150],
-				["r", 600, 775, 125, 225, "#06AC10", 150],
-				["r", 1200, 775, 125, 225, "#06AC10", 150]
-			],
-			tower: [
-				["r", 700, 200, 25, 200, data.wood.colour, 200],
-				["r", 700, 400, 25, 200, data.wood.colour, 200],
-				["r", 700, 600, 25, 200, data.wood.colour, 200],
-				["r", 700, 800, 25, 200, data.wood.colour, 200],
-				["r", 1100, 200, 25, 200, data.wood.colour, 200],
-				["r", 1100, 400, 25, 200, data.wood.colour, 200],
-				["r", 1100, 600, 25, 200, data.wood.colour, 200],
-				["r", 1100, 800, 25, 200, data.wood.colour, 200],
-				["r", 800, 100, 200, 25, data.wood.colour, 200],
-				["r", 1000, 100, 200, 25, data.wood.colour, 200],
-				["r", 800, 300, 200, 25, data.wood.colour, 200],
-				["r", 1000, 300, 200, 25, data.wood.colour, 200],
-				["r", 800, 500, 200, 25, data.wood.colour, 200],
-				["r", 1000, 500, 200, 25, data.wood.colour, 200],
-				["r", 800, 700, 200, 25, data.wood.colour, 200],
-				["r", 1000, 700, 200, 25, data.wood.colour, 200]
-			]
-		},
-		drops: [
-			{x: 800, y: 50},
-			{x: 1000, y: 50},
-			{x: 800, y: 250},
-			{x: 1000, y: 250},
-			{x: 800, y: 450},
-			{x: 1000, y: 450},
-			{x: 800, y: 650},
-			{x: 1000, y: 650},
-			{x: 800, y: 850},
-			{x: 1000, y: 850},
-			{x: 600, y: 600},
-			{x: 1200, y: 600},
-			{x: 350, y: 700},
-			{x: 450, y: 700},
-			{x: 1350, y: 700},
-			{x: 1450, y: 700},
-		]
+		// create: {
+		// 	treeL: [
+		// 		["c", 200, 400, 150, "#06AC10", 150],
+		// 		["r", 200, 600, 50, 400, "#2F1310", 600],
+		// 		["r", 200, 850, 50, 100, "#2F1310", 200],
+		// 	],
+		// 	treeR: [
+		// 		["c", 1600, 400, 150, "#06AC10", 150],
+		// 		["r", 1600, 600, 50, 400, "#2F1310", 600],
+		// 		["r", 1600, 850, 50, 100, "#2F1310", 200],
+		// 	],
+		// 	bush: [
+		// 		["r", 400, 825, 225, 125, "#06AC10", 150],
+		// 		["r", 1400, 825, 225, 125, "#06AC10", 150],
+		// 		["r", 600, 775, 125, 225, "#06AC10", 150],
+		// 		["r", 1200, 775, 125, 225, "#06AC10", 150]
+		// 	],
+		// 	tower: [
+		// 		["r", 700, 200, 25, 200, data.wood.colour, 200],
+		// 		["r", 700, 400, 25, 200, data.wood.colour, 200],
+		// 		["r", 700, 600, 25, 200, data.wood.colour, 200],
+		// 		["r", 700, 800, 25, 200, data.wood.colour, 200],
+		// 		["r", 1100, 200, 25, 200, data.wood.colour, 200],
+		// 		["r", 1100, 400, 25, 200, data.wood.colour, 200],
+		// 		["r", 1100, 600, 25, 200, data.wood.colour, 200],
+		// 		["r", 1100, 800, 25, 200, data.wood.colour, 200],
+		// 		["r", 800, 100, 200, 25, data.wood.colour, 200],
+		// 		["r", 1000, 100, 200, 25, data.wood.colour, 200],
+		// 		["r", 800, 300, 200, 25, data.wood.colour, 200],
+		// 		["r", 1000, 300, 200, 25, data.wood.colour, 200],
+		// 		["r", 800, 500, 200, 25, data.wood.colour, 200],
+		// 		["r", 1000, 500, 200, 25, data.wood.colour, 200],
+		// 		["r", 800, 700, 200, 25, data.wood.colour, 200],
+		// 		["r", 1000, 700, 200, 25, data.wood.colour, 200]
+		// 	]
+		// },
+		// drops: [
+		// 	{x: 800, y: 50},
+		// 	{x: 1000, y: 50},
+		// 	{x: 800, y: 250},
+		// 	{x: 1000, y: 250},
+		// 	{x: 800, y: 450},
+		// 	{x: 1000, y: 450},
+		// 	{x: 800, y: 650},
+		// 	{x: 1000, y: 650},
+		// 	{x: 800, y: 850},
+		// 	{x: 1000, y: 850},
+		// 	{x: 600, y: 600},
+		// 	{x: 1200, y: 600},
+		// 	{x: 350, y: 700},
+		// 	{x: 450, y: 700},
+		// 	{x: 1350, y: 700},
+		// 	{x: 1450, y: 700},
+		// ]
 	},
 	tomato: {
-
+		create: {
+			grounds: [
+				["r", 275, 800, 550, 200, "#2D2A23", 999],
+				["r", 1175, 800, 1250, 200, "#9FA1AE", 999],
+				["r", 50, 400, 100, 100, "#2D2A23", 999],
+				["r", 400, 400, 300, 100, "#2D2A23", 999],
+			],
+			plaza: [
+				["p", 1140, 270, [{x: 0, y: 0}, {x: 0, y: -120}, {x: 120, y: -20}, {x: 120, y: 0}], "#F9F6C1", 150],
+				["p", 760, 270, [{x: 0, y: 0}, {x: 0, y: -120}, {x: -120, y: -20}, {x: -120, y: 0}], "#F9F6C1", 150],
+				["r", 950, 260, 300, 100, "#A2E6F1", 300],
+				["c", 950, 150, 100, "#FC5C06", 600],
+				["r", 900, 700, 25, 50, "#A2E6F1", 100],
+				["r", 1000, 700, 25, 50, "#A2E6F1", 100],
+				["r", 800, 650, 50, 10, data.wood.colour, 50],
+				["r", 800, 675, 5, 55, data.metal.colour, 25],
+				["r", 1100, 650, 50, 10, data.wood.colour, 50],
+				["r", 1100, 675, 5, 55, data.metal.colour, 25],
+				["r", 750, 450, 50, 10, data.wood.colour, 50],
+				["r", 750, 475, 5, 55, data.metal.colour, 25],
+				["r", 950, 450, 50, 10, data.wood.colour, 50],
+				["r", 950, 475, 5, 55, data.metal.colour, 25],
+				["r", 1150, 450, 50, 10, data.wood.colour, 50],
+				["r", 1150, 475, 5, 55, data.metal.colour, 25],
+			],
+			car: [
+				["r", 350, 625, 200, 100, "#CE1C2E", 600],
+				["c", 300, 700, 25, "black", 25],
+				["c", 400, 700, 25, "black", 25],
+			],
+			station: [
+				["r", 1600, 650, 50, 100, "#F9F6C1", 600],
+				["r", 1550, 480, 400, 80, "#A2E6F1", 600],
+			]
+		},
+		structures: [
+			[900, 300, {type: 1, edit: 0, material: data.brick}],
+			[800, 300, {type: 1, edit: 0, material: data.brick}],
+			[900, 500, {type: 1, edit: 0, material: data.brick}],
+			[1000, 500, {type: 0, edit: 0, material: data.wood}],
+			[900, 500, {type: 0, edit: 0, material: data.wood}],
+			[1000, 500, {type: 2, edit: 0, material: data.wood}],
+			[800, 500, {type: 2, edit: 1, material: data.wood}],
+			[1000, 300, {type: 1, edit: 0, material: data.brick}],
+			[700, 600, {type: 0, edit: 0, material: data.brick}],
+			[1700, 600, {type: 0, edit: 0, material: data.metal}],
+			[1700, 500, {type: 0, edit: 0, material: data.metal}],
+			[1600, 500, {type: 1, edit: 0, material: data.metal}],
+			[1500, 500, {type: 1, edit: 0, material: data.metal}],
+			[1400, 500, {type: 1, edit: 0, material: data.metal}],
+			[1400, 500, {type: 0, edit: 0, material: data.metal}],
+			[1200, 600, {type: 0, edit: 0, material: data.brick}],
+			[1200, 500, {type: 0, edit: 0, material: data.brick}],
+			[1100, 500, {type: 1, edit: 0, material: data.brick}],
+			[700, 500, {type: 1, edit: 0, material: data.brick}],
+			[700, 500, {type: 0, edit: 0, material: data.brick}],
+			[700, 400, {type: 0, edit: 0, material: data.brick}],
+			[700, 300, {type: 0, edit: 0, material: data.brick}],
+			[700, 300, {type: 1, edit: 0, material: data.brick}],
+			[1200, 400, {type: 0, edit: 0, material: data.brick}],
+			[1200, 300, {type: 0, edit: 0, material: data.brick}],
+			[1100, 300, {type: 1, edit: 0, material: data.brick}],
+			[300, 300, {type: 0, edit: 0, material: data.brick}],
+			[300, 200, {type: 0, edit: 0, material: data.brick}],
+			[500, 300, {type: 0, edit: 0, material: data.brick}],
+			[300, 300, {type: 1, edit: 0, material: data.wood}],
+			[400, 300, {type: 1, edit: 0, material: data.wood}],
+			[500, 200, {type: 0, edit: 0, material: data.brick}],
+			[400, 200, {type: 1, edit: 0, material: data.wood}],
+			[300, 200, {type: 1, edit: 0, material: data.wood}],
+			[400, 100, {type: 2, edit: 1, material: data.wood}],
+			[300, 100, {type: 2, edit: 0, material: data.wood}],
+			[100, 600, {type: 0, edit: 0, material: data.metal}],
+			[0, 600, {type: 1, edit: 0, material: data.metal}],
+		],
+		drops: [
+			{x: 350, y: 250},
+			{x: 450, y: 250},
+			{x: 350, y: 550},
+			{x: 750, y: 400},
+			{x: 950, y: 400},
+			{x: 1150, y: 400},
+			{x: 800, y: 600},
+			{x: 1100, y: 600},
+			{x: 1500, y: 400},
+			{x: 1500, y: 650},
+		],
+		chests: [
+			{x: 400, y: 150},
+			{x: 60, y: 650},
+			{x: 950, y: 650},
+			{x: 1660, y: 650},
+		],
+		spawns: [
+			{},
+			{x: 50, y: 300},
+			{x: 500, y: 650},
+			{x: 950, y: 0},
+			{x: 1600, y: 400},
+		]
 	}
 }
 

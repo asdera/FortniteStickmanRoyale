@@ -1,7 +1,8 @@
-function setPlayer(player, id) {
+function setPlayer(x, y, id) {
 	playerWidth = 20;
 	playerHeight = 50;
-	player = new Box(Bodies.rectangle(game.startingPoint.x, game.startingPoint.y-playerHeight/2, playerWidth, playerHeight, { restitution: 0, friction: 0}), "red", 200);
+	var colour = random(["red", "dodgerblue", "orange", "darkgreen"])
+	var player = new Box(Bodies.rectangle(x, y-playerHeight/2, playerWidth, playerHeight, { restitution: 0, friction: 0}), colour, 200);
 	player.id = id;
 	player.width = playerWidth;
 	player.height = playerHeight;
@@ -45,16 +46,16 @@ function setPlayer(player, id) {
 			uses: 0,
 		},
 		mats: {
-			wood: 100,
-			brick: 100,
-			metal: 100,
+			wood: 1000,
+			brick: 1000,
+			metal: 1000,
 		}
 	}
 	// 0:Wall, 1:Floor, 2:Stairs, 3:Trap
 	player.building = {
 		type: 0,
 		material: data.wood,
-		stairsEdit: 0
+		edit: 0
 	}
 	player.cooldowns = {
 		nextJump: 0,
@@ -84,7 +85,11 @@ function setPlayer(player, id) {
 
 	    pos = this.body.position;
 	    vel = this.body.velocity;
-	    
+
+	    if (vel.y > 11) {
+	    	this.damage(round((vel.y-11)*2));
+	    }
+
 		Body.setAngle(this.body, 0)
 		Body.setVelocity(this.body, {x: vel.x*0.9, y: vel.y})
 
@@ -104,7 +109,7 @@ function setPlayer(player, id) {
 	    // stroke("white");
 	    // noFill(); // fill(this.colour);
 	    // strokeWeight(2);
-	    // if (pos.y + player.height/2 < 0) {
+	    // if (pos.y + this.height/2 < 0) {
 	    //   triangle(pos.x, 0, pos.x - 20, 20, pos.x + 20, 20);
 	    // } else {
 	    //   beginShape();
@@ -114,12 +119,18 @@ function setPlayer(player, id) {
 	    //   }
 	    //   endShape(CLOSE);
 
-	    //   // point(pos.x, pos.y + player.height * 0.6);
+	    //   // point(pos.x, pos.y + this.height * 0.6);
 
 	    // }
 
 	    stroke(this.colour);
 	    strokeWeight(2);
+	    fill("white");
+
+	    textAlign(CENTER, CENTER);
+	    textSize(20);
+		text(this.health, pos.x, pos.y - 45);
+
 	    fill("lightblue");
 	    this.stickPoints.pelvis = {x: pos.x, y:pos.y+this.height/2-this.width/2};
 	    this.stickPoints.head = {x: this.stickPoints.pelvis.x + cos(this.stickMan.hip) * (this.height-this.width), y: this.stickPoints.pelvis.y + sin(this.stickMan.hip) * (this.height-this.width)}
@@ -133,8 +144,8 @@ function setPlayer(player, id) {
 	    ellipse(this.stickPoints.head.x, this.stickPoints.head.y, this.width)
 
 
-		tempX = floor(pos.x/100)
-		tempY = max(floor(pos.y/100), 0)
+		var tempX = floor(pos.x/100)
+		var tempY = max(floor(pos.y/100), 0)
 
 	    if (this.stairsCheck()) {
 	    	stroke("lightblue");
@@ -166,22 +177,22 @@ function setPlayer(player, id) {
 						tempJ = true;
 					}
 				}
-				tempX = floor(pos.x/100)
-			    tempY = floor(pos.y/100)
+				var tempX = floor(pos.x/100)
+			    var tempY = floor(pos.y/100)
 			    // array1.concat(array2).unique(); 
-			    tempA = points[tempX][tempY+1].connections.concat(points[tempX+1][tempY+1].connections).unique();
+			    var tempA = points[tempX][tempY+1].connections.concat(points[tempX+1][tempY+1].connections).unique();
 			    for (var i = tempA.length - 1; i >= 0; i--) {
 					structurei = tempA[i];
 					if (Vertices.contains(structurei.body.vertices, {x: pos.x - this.width/4, y: pos.y + this.height * 0.6}) || Vertices.contains(structurei.body.vertices, {x: pos.x + this.width/4, y: pos.y + this.height * 0.6})) {
 						tempJ = true;
 					}
 				}
-				// for (var i = boxes.length - 1; i >= 0; i--) {
-				// 	boxi = boxes[i];
-				// 	if (Vertices.contains(boxi.body.vertices, {x: pos.x - this.width/4, y: pos.y + this.height * 0.6}) || Vertices.contains(boxi.body.vertices, {x: pos.x + this.width/4, y: pos.y + this.height * 0.6})) {
-				// 		tempJ = true;
-				// 	}
-				// }		
+				for (var i = boxes.length - 1; i >= 0; i--) {
+					boxi = boxes[i];
+					if (Vertices.contains(boxi.body.vertices, {x: pos.x - this.width/4, y: pos.y + this.height * 0.6}) || Vertices.contains(boxi.body.vertices, {x: pos.x + this.width/4, y: pos.y + this.height * 0.6})) {
+						tempJ = true;
+					}
+				}		
 				if (tempJ && this.cooldowns.nextJump <= 0) {
 					Body.setVelocity(this.body, {x: this.body.velocity.x, y: 0})
 					Body.applyForce(this.body, pos, {x: 0, y: -this.jump/100});
@@ -209,29 +220,39 @@ function setPlayer(player, id) {
 				break;
 			case "reload":
 				if (this.equiped == "building") {
-					if (this.building.stairsEdit == 0) {
-						this.building.stairsEdit = 1;
-					} else if (this.building.stairsEdit == 1) {
-						this.building.stairsEdit = 0;
+					if (this.building.edit == 0) {
+						this.building.edit = 1;
+					} else if (this.building.edit == 1) {
+						this.building.edit = 0;
 					}
 				} else {
 					this.reload();
 				}
 				break;
 			case "interact":
-				for (var i = boxes.length - 1; i >= 0; i--) {
-					boxi = boxes[i]
-					if (Vertices.contains(boxi.body.vertices, {x: mouseX, y: mouseY})) {
-						if (this.cooldowns.nextInteract <= 0 && getLength(pos, boxi.body.position) < player.height*2) {
-							if (boxi.item.resource) {
-								boxi.item.supply(this);
-								boxi.rip();
+				for (var i = items.length - 1; i >= 0; i--) {
+					itemi = items[i]
+					if (getLength(itemi.body.position, {x: mouseX, y: mouseY}) < 30) {
+						if (this.cooldowns.nextInteract <= 0 && getLength(pos, itemi.body.position) < 60) {
+							if (itemi.item.resource) {
+								itemi.item.supply(this);
+								itemi.rip();
 							} else if (["slot1", "slot2", "slot3"].includes(this.equiped)) {
-								var tempO = boxi.item;
-								boxi.item = this.inventory[this.equiped];
+								var tempO = itemi.item;
+								itemi.item = this.inventory[this.equiped];
 								this.inventory[this.equiped] = tempO;
 								this.cooldowns.nextInteract = 10;
 							}
+						}
+					}
+				}
+				break;
+			case "edit":
+				for (var i = structures.length - 1; i >= 0; i--) {
+					structurei = structures[i]
+					if (Vertices.contains(structurei.body.vertices, {x: mouse.x, y: mouse.y})) {
+						if ((structurei.id == player.id && getLength(pos, structurei.body.position) < 120) || editorMode) {
+							structurei.rip();
 						}
 					}
 				}
@@ -243,13 +264,13 @@ function setPlayer(player, id) {
 	}
 	// Clicked
 	player.mouse = function(c=0) {
-		pos = this.body.position;
+		var pos = this.body.position;
 
 		this.direction = pos.x > mouseX;
 
 		equipedGun = this.inventory[this.equiped];
 
-	    data.draw(player.stickPoints.hands, atan2(mouseX-player.stickPoints.head.x, mouseY-player.stickPoints.head.y), equipedGun, player.colour);
+	    data.draw(this.stickPoints.hands, atan2(mouseX-this.stickPoints.head.x, mouseY-this.stickPoints.head.y), equipedGun, this.colour);
 
 		switch (this.equiped) {
 			case "building":
@@ -259,7 +280,7 @@ function setPlayer(player, id) {
 					strokeWeight(2);
 					stroke(255);
 					fill("skyblue");
-					createStructure(this.building, this.resources.mats, mouse.down, player.id);
+					createStructure(mouseX, mouseY, this.building, this.resources.mats, pos, mouse.down, this.id);
 				}
 				break;
 			case "slot1":
@@ -299,6 +320,8 @@ function setPlayer(player, id) {
   	}
   	player.stairsCheck = function() {
   		pos = this.body.position
+  		var tempX = floor(pos.x/100)
+		var tempY = max(floor(pos.y/100), 0)
   		if (buildingMap[2][tempX][tempY] && (Vertices.contains(buildingMap[2][tempX][tempY].body.vertices, {x: pos.x - this.width/4, y: pos.y + this.height * 0.6}) || Vertices.contains(buildingMap[2][tempX][tempY].body.vertices, {x: pos.x + this.width/4, y: pos.y + this.height * 0.6}))) {
 			Body.setVelocity(this.body, {x: this.body.velocity.x, y: buildingMap[2][tempX][tempY].edit ? this.body.velocity.x : -this.body.velocity.x});
 			return true;
@@ -308,6 +331,11 @@ function setPlayer(player, id) {
 		}
 		return false;
   	}
+  	player.damage = function(d) {
+	    this.health -= d;
+	    if (this.health <= 0) {
+	      this.rip();
+	    }
+  	}
 	return player;
-
 }
